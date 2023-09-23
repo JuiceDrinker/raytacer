@@ -1,3 +1,6 @@
+mod point;
+mod vec3;
+
 use std::{fs::File, io::Write};
 
 fn main() {
