@@ -1,5 +1,9 @@
 use super::vec3::Vec3;
-struct Point {}
+struct Point {
+    x: f32,
+    y: f32,
+    z: f32,
+}
 
 impl Point {
     fn new(x: f32, y: f32, z: f32) -> Vec3 {
