@@ -35,6 +35,15 @@ impl Vec3 {
     fn unit_vector(&self) -> Vec3 {
         (1.00 / self.len()) * self
     }
+
+    pub fn to_pixel_row(&self) -> String {
+        format!(
+            "{} {} {}\n",
+            (&self.x * 255.999) as i32,
+            (&self.y * 255.999) as i32,
+            (&self.z * 255.999) as i32
+        )
+    }
 }
 
 impl Add for Vec3 {
