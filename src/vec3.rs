@@ -23,19 +23,19 @@ impl Vec3 {
         self.z
     }
 
-    fn dot(&self, vec: &Vec3) -> f32 {
-        self.x * vec.x + self.y * vec.y + self.z + vec.z
+    pub fn dot(&self, other: &Vec3) -> f32 {
+        self.x * other.x + self.y * other.y + self.z * other.z
     }
 
-    fn cross(self, vec: Vec3) -> Vec3 {
+    pub fn cross(self, other: Vec3) -> Vec3 {
         Vec3 {
-            x: self.y * vec.z - self.z * vec.y,
-            y: self.z * vec.x - self.x * vec.y,
-            z: self.x * vec.y - self.y * vec.x,
+            x: self.y * other.z - self.z * other.y,
+            y: self.z * other.x - self.x * other.y,
+            z: self.x * other.y - self.y * other.x,
         }
     }
 
-    fn len(&self) -> f32 {
+    pub fn len(&self) -> f32 {
         f32::sqrt(self.len_squared())
     }
 
@@ -47,12 +47,12 @@ impl Vec3 {
         (1.00 / self.len()) * self
     }
 
-    pub fn to_pixel_row(&self) -> String {
+    pub fn to_pixel_row(self) -> String {
         format!(
             "{} {} {}\n",
-            (&self.x * 255.999) as i32,
-            (&self.y * 255.999) as i32,
-            (&self.z * 255.999) as i32
+            (self.x * 255.999) as i32,
+            (self.y * 255.999) as i32,
+            (self.z * 255.999) as i32
         )
     }
 }
