@@ -7,17 +7,29 @@ use crate::ray::Ray;
 use crate::vec3::Vec3;
 
 fn ray_color(ray: &Ray) -> Vec3 {
-    let directin_vector = &ray.direction();
-    let unit_vector = directin_vector.unit_vector();
+    let sphere = Vec3::new(0.00, 0.00, -1.00);
+    if hit_sphere(&sphere, 0.5, ray) {
+        return Vec3::new(1.0, 0.0, 0.0);
+    }
+    let direction_vector = &ray.direction();
+    let unit_vector = direction_vector.unit_vector();
     let a = 0.5 * (unit_vector.y() + 1.0);
     (1.0 - a) * Vec3::new(1.0, 1.0, 1.0) + a * Vec3::new(0.5, 0.7, 1.0)
 }
 
+fn hit_sphere(&center: &Vec3, radius: f32, &ray: &Ray) -> bool {
+    let oc = ray.origin() - center;
+    let a = ray.direction().dot(&ray.direction());
+    let b = 2.0 * oc.dot(&ray.direction());
+    let c = oc.dot(&oc) - f32::powi(radius, 2);
+
+    f32::powi(b, 2) - 4.0 * a * c >= 0.00
+}
 fn main() {
     // Image
 
-    const ASPECT_RATIO: f32 = 16.0 / 19.0;
-    let image_width: u32 = 400;
+    const ASPECT_RATIO: f32 = 16.0 / 9.0;
+    let image_width: u32 = 600;
     let image_height = f32::max(1.00, image_width as f32 / ASPECT_RATIO) as u32;
 
     // Camera
