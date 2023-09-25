@@ -8,8 +8,15 @@ use crate::vec3::Vec3;
 
 fn ray_color(ray: &Ray) -> Vec3 {
     let sphere = Vec3::new(0.00, 0.00, -1.00);
-    if hit_sphere(&sphere, 0.5, ray) {
-        return Vec3::new(1.0, 0.0, 0.0);
+    let t = hit_sphere(&sphere, 0.5, ray);
+    if t > 0.0 {
+        let normal_vec = ray.at(t) - Vec3::new(0.0, 0.0, -1.0);
+        return 0.5
+            * Vec3::new(
+                normal_vec.x() + 1.00,
+                normal_vec.y() + 1.00,
+                normal_vec.z() + 1.00,
+            );
     }
     let direction_vector = &ray.direction();
     let unit_vector = direction_vector.unit_vector();
@@ -17,13 +24,18 @@ fn ray_color(ray: &Ray) -> Vec3 {
     (1.0 - a) * Vec3::new(1.0, 1.0, 1.0) + a * Vec3::new(0.5, 0.7, 1.0)
 }
 
-fn hit_sphere(&center: &Vec3, radius: f32, &ray: &Ray) -> bool {
+fn hit_sphere(&center: &Vec3, radius: f32, &ray: &Ray) -> f32 {
     let oc = ray.origin() - center;
-    let a = ray.direction().dot(&ray.direction());
-    let b = 2.0 * oc.dot(&ray.direction());
-    let c = oc.dot(&oc) - f32::powi(radius, 2);
+    let a = ray.direction().len_squared();
+    let half_b = oc.dot(&ray.direction());
+    let c = oc.len_squared() - f32::powi(radius, 2);
+    let disc = f32::powi(half_b, 2) - a * c;
 
-    f32::powi(b, 2) - 4.0 * a * c >= 0.00
+    if disc < 0.00 {
+        -1.0
+    } else {
+        (-half_b - f32::sqrt(disc)) / (a)
+    }
 }
 fn main() {
     // Image

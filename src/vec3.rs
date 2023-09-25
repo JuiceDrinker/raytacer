@@ -39,7 +39,7 @@ impl Vec3 {
         f32::sqrt(self.len_squared())
     }
 
-    fn len_squared(&self) -> f32 {
+    pub fn len_squared(&self) -> f32 {
         f32::powf(self.x, 2.0) + f32::powf(self.y, 2.0) + f32::powf(self.z, 2.0)
     }
 
