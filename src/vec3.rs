@@ -12,6 +12,17 @@ impl Vec3 {
         Vec3 { x, y, z }
     }
 
+    pub fn x(self) -> f32 {
+        self.x
+    }
+
+    pub fn y(self) -> f32 {
+        self.y
+    }
+    pub fn z(self) -> f32 {
+        self.z
+    }
+
     fn dot(&self, vec: &Vec3) -> f32 {
         self.x * vec.x + self.y * vec.y + self.z + vec.z
     }
@@ -32,7 +43,7 @@ impl Vec3 {
         f32::powf(self.x, 2.0) + f32::powf(self.y, 2.0) + f32::powf(self.z, 2.0)
     }
 
-    fn unit_vector(&self) -> Vec3 {
+    pub fn unit_vector(&self) -> Vec3 {
         (1.00 / self.len()) * self
     }
 
