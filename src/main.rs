@@ -17,7 +17,7 @@ use crate::world::World;
 
 fn ray_color(ray: &Ray, world: &dyn Hit) -> Vec3 {
     if let Some(hit_record) = world.hit(ray, 0.00, std::f64::INFINITY) {
-        return 0.5 * (hit_record.normal + Vec3::new(1.0, 1.0, 1.0));
+        0.5 * (hit_record.normal + Vec3::new(1.0, 1.0, 1.0))
     } else {
         let unit_direction = ray.direction().unit_vector();
         let a = 0.5 * (unit_direction.y() + 1.0);
