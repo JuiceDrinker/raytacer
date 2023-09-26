@@ -1,5 +1,7 @@
 use std::fmt::Display;
-use std::ops::{Add, Div, Mul, Sub};
+use std::ops::{Add, Div, Mul, Range, Sub};
+
+use rand::Rng;
 #[derive(Copy, Clone)]
 pub struct Vec3 {
     x: f64,
@@ -47,13 +49,43 @@ impl Vec3 {
         (1.00 / self.len()) * self
     }
 
-    pub fn to_pixel_row(self) -> String {
-        format!(
-            "{} {} {}\n",
-            (self.x * 255.999) as i32,
-            (self.y * 255.999) as i32,
-            (self.z * 255.999) as i32
-        )
+    pub fn format_color(self, samples_per_pixel: u64) -> String {
+        let ir = (256.0
+            * (self.x / (samples_per_pixel as f64))
+                .sqrt()
+                .clamp(0.0, 0.999)) as u64;
+        let ig = (256.0
+            * (self.y / (samples_per_pixel as f64))
+                .sqrt()
+                .clamp(0.0, 0.999)) as u64;
+
+        let ib = (256.0
+            * (self.z / (samples_per_pixel as f64))
+                .sqrt()
+                .clamp(0.0, 0.999)) as u64;
+
+        format!("{} {} {}", ir, ig, ib)
+    }
+
+    pub fn random(r: Range<f64>) -> Self {
+        let mut rng = rand::thread_rng();
+
+        Vec3 {
+            x: rng.gen_range(r.clone()),
+            y: rng.gen_range(r.clone()),
+            z: rng.gen_range(r.clone()),
+        }
+    }
+
+    pub fn random_in_unit_sphere() -> Self {
+        {
+            loop {
+                let vec = Vec3::random(-1.0..1.0);
+                if vec.len() < 1.0 {
+                    return vec;
+                }
+            }
+        }
     }
 }
 
