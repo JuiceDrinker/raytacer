@@ -23,7 +23,7 @@ fn ray_color(ray: &Ray, world: &World, depth: u64) -> Vec3 {
     if depth == 0 {
         return Vec3::new(0.0, 0.0, 0.0);
     }
-    if let Some(hit_record) = world.hit(ray, 0.00, std::f64::INFINITY) {
+    if let Some(hit_record) = world.hit(ray, 0.001, std::f64::INFINITY) {
         let target = hit_record.point + hit_record.normal + Vec3::random_in_unit_sphere();
         let ray = Ray::new(hit_record.point, target - hit_record.point);
         0.5 * ray_color(&ray, world, depth - 1)
