@@ -1,6 +1,7 @@
 mod camera;
 mod hit;
 mod hit_record;
+mod material;
 mod ray;
 mod sphere;
 mod util;
@@ -9,11 +10,14 @@ mod world;
 
 use std::io::stderr;
 use std::io::Write;
+use std::rc::Rc;
 
 use hit::Hit;
 use rand::Rng;
 
 use crate::camera::Camera;
+use crate::material::Lambertian;
+use crate::material::Metal;
 use crate::ray::Ray;
 use crate::sphere::Sphere;
 use crate::vec3::Vec3;
@@ -24,10 +28,11 @@ fn ray_color(ray: &Ray, world: &World, depth: u64) -> Vec3 {
         return Vec3::new(0.0, 0.0, 0.0);
     }
     if let Some(hit_record) = world.hit(ray, 0.001, std::f64::INFINITY) {
-        let target =
-            hit_record.point + hit_record.normal + Vec3::random_in_unit_sphere().unit_vector();
-        let ray = Ray::new(hit_record.point, target - hit_record.point);
-        0.5 * ray_color(&ray, world, depth - 1)
+        if let Some((a, s)) = hit_record.material.scattter(ray, &hit_record) {
+            a * ray_color(&s, world, depth - 1)
+        } else {
+            Vec3::new(0.0, 0.0, 0.0)
+        }
     } else {
         let unit_direction = ray.direction().unit_vector();
         let a = 0.5 * (unit_direction.y() + 1.0);
@@ -38,14 +43,25 @@ fn ray_color(ray: &Ray, world: &World, depth: u64) -> Vec3 {
 fn main() {
     // Image
     const ASPECT_RATIO: f64 = 16.0 / 9.0;
-    const IMAGE_WIDTH: u64 = 300;
+    const IMAGE_WIDTH: u64 = 256;
     const IMAGE_HEIGHT: u64 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as u64;
-    const SAMPLES_PER_PIXEL: u64 = 100;
-    const MAX_DEPTH: u64 = 5;
+    const SAMPLES_PER_PIXEL: u64 = 300;
+    const MAX_DEPTH: u64 = 50;
     // World
     let mut world = World::new();
-    world.push(Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5)));
-    world.push(Box::new(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0)));
+    let mat_ground = Rc::new(Lambertian::new(Vec3::new(0.8, 0.8, 0.0)));
+    let mat_center = Rc::new(Lambertian::new(Vec3::new(0.7, 0.3, 0.3)));
+    let mat_left = Rc::new(Metal::new(Vec3::new(0.8, 0.8, 0.8), 0.3));
+    let mat_right = Rc::new(Metal::new(Vec3::new(0.8, 0.6, 0.2), 1.0));
+
+    let sphere_ground = Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0, mat_ground);
+    let sphere_center = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, mat_center);
+    let sphere_left = Sphere::new(Vec3::new(-1.0, 0.0, -1.0), 0.5, mat_left);
+    let sphere_right = Sphere::new(Vec3::new(1.0, 0.0, -1.0), 0.5, mat_right);
+    world.push(Box::new(sphere_ground));
+    world.push(Box::new(sphere_center));
+    world.push(Box::new(sphere_left));
+    world.push(Box::new(sphere_right));
 
     // Camera
 

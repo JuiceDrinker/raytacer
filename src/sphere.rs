@@ -1,13 +1,20 @@
-use crate::{hit::Hit, hit_record::HitRecord, ray::Ray, vec3::Vec3};
+use std::rc::Rc;
+
+use crate::{hit::Hit, hit_record::HitRecord, material::Scatter, ray::Ray, vec3::Vec3};
 
 pub struct Sphere {
     center: Vec3,
     radius: f64,
+    material: Rc<dyn Scatter>,
 }
 
 impl Sphere {
-    pub fn new(center: Vec3, radius: f64) -> Self {
-        Sphere { center, radius }
+    pub fn new(center: Vec3, radius: f64, material: Rc<dyn Scatter>) -> Self {
+        Sphere {
+            center,
+            radius,
+            material,
+        }
     }
 }
 impl Hit for Sphere {
@@ -37,6 +44,7 @@ impl Hit for Sphere {
             normal: (p - self.center) / self.radius,
             t: root,
             front_face: false,
+            material: self.material.clone(),
         };
 
         let outward_normal = (rec.point - self.center) / self.radius;

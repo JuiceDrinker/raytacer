@@ -49,6 +49,15 @@ impl Vec3 {
         (1.00 / self.len()) * self
     }
 
+    pub fn reflect(self, n: Vec3) -> Self {
+        self - 2.0 * self.dot(&n) * n
+    }
+
+    pub fn is_near_zero(self) -> bool {
+        const EPS: f64 = 1.0e-8;
+        self.x.abs() < EPS && self.y < EPS && self.z < EPS
+    }
+
     pub fn format_color(self, samples_per_pixel: u64) -> String {
         let ir = (256.0
             * (self.x / (samples_per_pixel as f64))
@@ -108,6 +117,18 @@ impl Sub for Vec3 {
             x: self.x - rhs.x,
             y: self.y - rhs.y,
             z: self.z - rhs.z,
+        }
+    }
+}
+
+impl Mul<Vec3> for Vec3 {
+    type Output = Vec3;
+
+    fn mul(self, other: Vec3) -> Self::Output {
+        Vec3 {
+            x: self.x * other.x,
+            y: self.y * other.y,
+            z: self.z * other.z,
         }
     }
 }
