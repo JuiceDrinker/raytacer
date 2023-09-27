@@ -1,7 +1,7 @@
-use crate::{hit_record::HitRecord, ray::Ray, vec3::Vec3};
+use crate::{hit, hit_record::HitRecord, ray::Ray, vec3::Vec3};
 
 pub trait Scatter {
-    fn scattter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<(Vec3, Ray)>;
+    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<(Vec3, Ray)>;
 }
 
 pub struct Lambertian {
@@ -15,7 +15,7 @@ impl Lambertian {
 }
 
 impl Scatter for Lambertian {
-    fn scattter(&self, _ray_in: &Ray, hit_record: &HitRecord) -> Option<(Vec3, Ray)> {
+    fn scatter(&self, _ray_in: &Ray, hit_record: &HitRecord) -> Option<(Vec3, Ray)> {
         let mut scatter_direction = hit_record.normal + Vec3::random_in_unit_sphere().unit_vector();
 
         if scatter_direction.is_near_zero() {
@@ -39,7 +39,7 @@ impl Metal {
 }
 
 impl Scatter for Metal {
-    fn scattter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<(Vec3, Ray)> {
+    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<(Vec3, Ray)> {
         let reflected = ray_in.direction().reflect(hit_record.normal).unit_vector();
         let scattered = Ray::new(
             hit_record.point,
@@ -51,5 +51,39 @@ impl Scatter for Metal {
         } else {
             None
         }
+    }
+}
+
+pub struct Dielectric {
+    ir: f64,
+}
+
+impl Dielectric {
+    pub fn new(ir: f64) -> Self {
+        Self { ir }
+    }
+}
+
+impl Scatter for Dielectric {
+    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<(Vec3, Ray)> {
+        let refraction_ratio = if hit_record.front_face {
+            1.0 / self.ir
+        } else {
+            self.ir
+        };
+
+        let unit_direction = ray_in.direction().unit_vector();
+
+        let cos_theta = ((-1.0) * unit_direction).dot(&hit_record.normal).min(1.0);
+        let sin_theta = (1.0 - cos_theta.powi(2)).sqrt();
+
+        let direction = if refraction_ratio * sin_theta > 1.0 {
+            unit_direction.reflect(hit_record.normal)
+        } else {
+            unit_direction.refract(hit_record.normal, refraction_ratio)
+        };
+
+        let scattered = Ray::new(hit_record.point, direction);
+        Some((Vec3::new(1.0, 1.0, 1.0), scattered))
     }
 }
