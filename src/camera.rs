@@ -16,13 +16,13 @@ impl Camera {
         aspect_ratio: f64,
     ) -> Camera {
         // Vertical field-of-view in degrees
-        let theta = std::f64::consts::PI / 180.0 * vfov;
+        let theta = vfov.to_radians();
         let viewport_height = 2.0 * (theta / 2.0).tan();
         let viewport_width = aspect_ratio * viewport_height;
 
         let cw = (lookfrom - lookat).unit_vector();
         let cu = vup.cross(cw).unit_vector();
-        let cv = cw.cross(cu);
+        let cv = -1.0 * cw.cross(cu);
 
         let h = viewport_width * cu;
         let v = viewport_height * cv;

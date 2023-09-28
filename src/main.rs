@@ -4,7 +4,6 @@ mod hit_record;
 mod material;
 mod ray;
 mod sphere;
-mod util;
 mod vec3;
 mod world;
 
@@ -50,7 +49,7 @@ fn main() {
     const IMAGE_WIDTH: u64 = 256;
     const IMAGE_HEIGHT: u64 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as u64;
     const SAMPLES_PER_PIXEL: u64 = 300;
-    const MAX_DEPTH: u64 = 50;
+    const MAX_DEPTH: u64 = 20;
 
     // World
     let mut world = World::new();
