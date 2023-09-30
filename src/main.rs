@@ -38,8 +38,8 @@ fn ray_color(ray: &Ray, world: &World, depth: u64) -> Vec3 {
         }
     } else {
         let unit_direction = ray.direction().unit_vector();
-        let a = 0.5 * (unit_direction.y() + 1.0);
-        (1.0 - a) * Vec3::new(1.0, 1.0, 1.0) + a * Vec3::new(0.5, 0.7, 1.0)
+        let t = 0.5 * (unit_direction.y() + 1.0);
+        (1.0 - t) * Vec3::new(1.0, 1.0, 1.0) + t * Vec3::new(0.5, 0.7, 1.0)
     }
 }
 
@@ -48,7 +48,7 @@ fn main() {
     const ASPECT_RATIO: f64 = 16.0 / 9.0;
     const IMAGE_WIDTH: u64 = 256;
     const IMAGE_HEIGHT: u64 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as u64;
-    const SAMPLES_PER_PIXEL: u64 = 300;
+    const SAMPLES_PER_PIXEL: u64 = 20;
     const MAX_DEPTH: u64 = 20;
 
     // World
@@ -76,8 +76,18 @@ fn main() {
     let lookfrom = Point3::new(3.0, 3.0, 2.0);
     let lookat = Point3::new(0.0, 0.0, -1.0);
     let vup = Vec3::new(0.0, 1.0, 0.0);
+    let dist_to_focus = (lookfrom - lookat).len();
+    let aperture = 0.0;
 
-    let cam = Camera::new(lookfrom, lookat, vup, 20.0, ASPECT_RATIO);
+    let cam = Camera::new(
+        lookfrom,
+        lookat,
+        vup,
+        20.0,
+        ASPECT_RATIO,
+        aperture,
+        dist_to_focus,
+    );
     println!("P3");
     println!("{} {}", IMAGE_WIDTH, IMAGE_HEIGHT);
     println!("255");
