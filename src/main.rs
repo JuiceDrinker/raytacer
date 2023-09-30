@@ -4,7 +4,6 @@ mod hit_record;
 mod material;
 mod ray;
 mod sphere;
-mod util;
 mod vec3;
 mod world;
 
@@ -25,6 +24,7 @@ use crate::vec3::Vec3;
 use crate::world::World;
 
 type Color = Vec3;
+type Point3 = Vec3;
 
 fn ray_color(ray: &Ray, world: &World, depth: u64) -> Vec3 {
     if depth == 0 {
@@ -38,8 +38,8 @@ fn ray_color(ray: &Ray, world: &World, depth: u64) -> Vec3 {
         }
     } else {
         let unit_direction = ray.direction().unit_vector();
-        let a = 0.5 * (unit_direction.y() + 1.0);
-        (1.0 - a) * Vec3::new(1.0, 1.0, 1.0) + a * Vec3::new(0.5, 0.7, 1.0)
+        let t = 0.5 * (unit_direction.y() + 1.0);
+        (1.0 - t) * Vec3::new(1.0, 1.0, 1.0) + t * Vec3::new(0.5, 0.7, 1.0)
     }
 }
 
@@ -48,32 +48,46 @@ fn main() {
     const ASPECT_RATIO: f64 = 16.0 / 9.0;
     const IMAGE_WIDTH: u64 = 256;
     const IMAGE_HEIGHT: u64 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as u64;
-    const SAMPLES_PER_PIXEL: u64 = 300;
-    const MAX_DEPTH: u64 = 50;
+    const SAMPLES_PER_PIXEL: u64 = 20;
+    const MAX_DEPTH: u64 = 20;
+
     // World
     let mut world = World::new();
+
     let mat_ground = Rc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
     let mat_center = Rc::new(Lambertian::new(Color::new(0.1, 0.2, 0.5)));
     let mat_left = Rc::new(Dielectric::new(1.5));
     let mat_left_inner = Rc::new(Dielectric::new(1.5));
-    let mat_right = Rc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 0.0));
+    let mat_right = Rc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 1.0));
 
-    let sphere_ground = Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0, mat_ground);
-    let sphere_center = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, mat_center);
-    let sphere_left = Sphere::new(Vec3::new(-1.0, 0.0, -1.0), 0.5, mat_left);
-    let sphere_left_inner = Sphere::new(Vec3::new(-1.0, 0.0, -1.0), -0.4, mat_left_inner);
-    let sphere_right = Sphere::new(Vec3::new(1.0, 0.0, -1.0), 0.5, mat_right);
+    let sphere_ground = Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0, mat_ground);
+    let sphere_center = Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5, mat_center);
+    let sphere_left = Sphere::new(Point3::new(-1.0, 0.0, -1.0), 0.5, mat_left);
+    let sphere_left_inner = Sphere::new(Point3::new(-1.0, 0.0, -1.0), -0.45, mat_left_inner);
+    let sphere_right = Sphere::new(Point3::new(1.0, 0.0, -1.0), 0.5, mat_right);
 
     world.push(Box::new(sphere_ground));
     world.push(Box::new(sphere_center));
     world.push(Box::new(sphere_left));
-    world.push(Box::new(sphere_right));
     world.push(Box::new(sphere_left_inner));
+    world.push(Box::new(sphere_right));
 
     // Camera
+    let lookfrom = Point3::new(3.0, 3.0, 2.0);
+    let lookat = Point3::new(0.0, 0.0, -1.0);
+    let vup = Vec3::new(0.0, 1.0, 0.0);
+    let dist_to_focus = (lookfrom - lookat).len();
+    let aperture = 0.0;
 
-    let cam = Camera::new();
-
+    let cam = Camera::new(
+        lookfrom,
+        lookat,
+        vup,
+        20.0,
+        ASPECT_RATIO,
+        aperture,
+        dist_to_focus,
+    );
     println!("P3");
     println!("{} {}", IMAGE_WIDTH, IMAGE_HEIGHT);
     println!("255");
