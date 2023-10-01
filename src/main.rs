@@ -26,6 +26,64 @@ use crate::world::World;
 type Color = Vec3;
 type Point3 = Vec3;
 
+fn random_scene() -> World {
+    let mut rng = rand::thread_rng();
+    let mut world = World::new();
+
+    let ground_mat = Rc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
+    let ground_sphere = Sphere::new(Point3::new(0.0, -1000.0, 0.0), 1000.0, ground_mat);
+
+    world.push(Box::new(ground_sphere));
+
+    for a in -1..=1 {
+        for b in -1..=1 {
+            let choose_mat: f64 = rng.gen();
+            let center = Point3::new(
+                (a as f64) + rng.gen_range(0.0..0.9),
+                0.2,
+                (b as f64) + rng.gen_range(0.0..0.9),
+            );
+
+            if choose_mat < 0.8 {
+                // Diffuse
+                let albedo = Color::random(0.0..1.0) * Color::random(0.0..1.0);
+                let sphere_mat = Rc::new(Lambertian::new(albedo));
+                let sphere = Sphere::new(center, 0.2, sphere_mat);
+
+                world.push(Box::new(sphere));
+            } else if choose_mat < 0.95 {
+                // Metal
+                let albedo = Color::random(0.4..1.0);
+                let fuzz = rng.gen_range(0.0..0.5);
+                let sphere_mat = Rc::new(Metal::new(albedo, fuzz));
+                let sphere = Sphere::new(center, 0.2, sphere_mat);
+
+                world.push(Box::new(sphere));
+            } else {
+                // Glass
+                let sphere_mat = Rc::new(Dielectric::new(1.5));
+                let sphere = Sphere::new(center, 0.2, sphere_mat);
+
+                world.push(Box::new(sphere));
+            }
+        }
+    }
+
+    let mat1 = Rc::new(Dielectric::new(1.5));
+    let mat2 = Rc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
+    let mat3 = Rc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
+
+    let sphere1 = Sphere::new(Point3::new(0.0, 1.0, 0.0), 1.0, mat1);
+    let sphere2 = Sphere::new(Point3::new(-4.0, 1.0, 0.0), 1.0, mat2);
+    let sphere3 = Sphere::new(Point3::new(4.0, 1.0, 0.0), 1.0, mat3);
+
+    world.push(Box::new(sphere1));
+    world.push(Box::new(sphere2));
+    world.push(Box::new(sphere3));
+
+    world
+}
+
 fn ray_color(ray: &Ray, world: &World, depth: u64) -> Vec3 {
     if depth == 0 {
         return Vec3::new(0.0, 0.0, 0.0);
@@ -45,45 +103,27 @@ fn ray_color(ray: &Ray, world: &World, depth: u64) -> Vec3 {
 
 fn main() {
     // Image
-    const ASPECT_RATIO: f64 = 16.0 / 9.0;
-    const IMAGE_WIDTH: u64 = 256;
+    const ASPECT_RATIO: f64 = 3.0 / 2.0;
+    const IMAGE_WIDTH: u64 = 500;
     const IMAGE_HEIGHT: u64 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as u64;
     const SAMPLES_PER_PIXEL: u64 = 20;
     const MAX_DEPTH: u64 = 20;
 
     // World
-    let mut world = World::new();
-
-    let mat_ground = Rc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
-    let mat_center = Rc::new(Lambertian::new(Color::new(0.1, 0.2, 0.5)));
-    let mat_left = Rc::new(Dielectric::new(1.5));
-    let mat_left_inner = Rc::new(Dielectric::new(1.5));
-    let mat_right = Rc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 1.0));
-
-    let sphere_ground = Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0, mat_ground);
-    let sphere_center = Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5, mat_center);
-    let sphere_left = Sphere::new(Point3::new(-1.0, 0.0, -1.0), 0.5, mat_left);
-    let sphere_left_inner = Sphere::new(Point3::new(-1.0, 0.0, -1.0), -0.45, mat_left_inner);
-    let sphere_right = Sphere::new(Point3::new(1.0, 0.0, -1.0), 0.5, mat_right);
-
-    world.push(Box::new(sphere_ground));
-    world.push(Box::new(sphere_center));
-    world.push(Box::new(sphere_left));
-    world.push(Box::new(sphere_left_inner));
-    world.push(Box::new(sphere_right));
+    let world = random_scene();
 
     // Camera
-    let lookfrom = Point3::new(3.0, 3.0, 2.0);
-    let lookat = Point3::new(0.0, 0.0, -1.0);
+    let lookfrom = Point3::new(0.0, 1.5, -3.0);
+    let lookat = Point3::new(0.0, 1.0, 0.0);
     let vup = Vec3::new(0.0, 1.0, 0.0);
-    let dist_to_focus = (lookfrom - lookat).len();
+    let dist_to_focus = 10.0;
     let aperture = 0.0;
 
     let cam = Camera::new(
         lookfrom,
         lookat,
         vup,
-        20.0,
+        70.0,
         ASPECT_RATIO,
         aperture,
         dist_to_focus,
