@@ -1,6 +1,6 @@
 use crate::{hit_record::HitRecord, ray::Ray, vec3::Vec3};
 
-pub trait Scatter {
+pub trait Scatter: Send + Sync {
     fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<(Vec3, Ray)>;
 }
 

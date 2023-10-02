@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::{material::Scatter, ray::Ray, vec3::Vec3};
 
@@ -6,7 +6,7 @@ pub struct HitRecord {
     pub point: Vec3,
     pub normal: Vec3,
     pub t: f64,
-    pub material: Rc<dyn Scatter>,
+    pub material: Arc<dyn Scatter>,
     pub front_face: bool,
 }
 
